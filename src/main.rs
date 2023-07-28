@@ -1,6 +1,7 @@
 mod structs;
 use crate::structs::*;
 use colored::Colorize;
+use datetime::{convenience::Today, LocalDate, Month};
 use reqwest::Error;
 use scraper::*;
 
@@ -24,13 +25,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .inner_html()
                 .red()
         );
+        let mut meals = Vec::new();
         for meal in day.select(&meal_selector) {
             let meal = Meal {
                 name: meal.inner_html(),
                 description: String::from("placeholder"),
             };
-            println!("{}", meal.name);
+            println!("{}", &meal.name);
+            meals.push(meal);
         }
+        // let date_html = day.select(&date_selector).next().unwrap().inner_html();
+        // let mut day_number = date_html.split(".");
+        // println!("{}", day_number.nth(0).unwrap());
+        let menu = Menu {
+            date: LocalDate::ymd(2023, Month::from_one(06)?, 16)?,
+            meals,
+        };
     }
 
     Ok(())

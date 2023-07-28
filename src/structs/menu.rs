@@ -2,6 +2,6 @@ use crate::Meal;
 use datetime::LocalDate;
 
 pub struct Menu {
-    date: LocalDate,
-    meals: Vec<Meal>,
+    pub date: LocalDate,
+    pub meals: Vec<Meal>,
 }
