@@ -1,3 +1,5 @@
+mod structs;
+use crate::structs::*;
 use colored::Colorize;
 use reqwest::Error;
 use scraper::*;
@@ -23,9 +25,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .red()
         );
         for meal in day.select(&meal_selector) {
-            println!("{}", meal.inner_html());
+            let meal = Meal {
+                name: meal.inner_html(),
+                description: String::from("placeholder"),
+            };
+            println!("{}", meal.name);
         }
     }
+
     Ok(())
 }
 
