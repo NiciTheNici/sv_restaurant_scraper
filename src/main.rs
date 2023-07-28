@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         get_svrestaurant_html("https://giardino-sg.sv-restaurant.ch/de/menuplan/giardino/").await?;
     let document = Html::parse_document(&res);
     let day_selector = Selector::parse("div.menu-plan-grid").unwrap();
-    let meal_selector = Selector::parse("h2").unwrap();
+    let meal_selector = Selector::parse("h2.menu-title").unwrap();
     let date_selector = Selector::parse("span.date").unwrap();
     // let title = document.select(&title_selector).next().unwrap();
 
