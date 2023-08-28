@@ -1,7 +1,8 @@
 use crate::Meal;
-use datetime::LocalDate;
+use chrono::prelude::*;
 
+#[derive(Debug)]
 pub struct Menu {
-    pub date: LocalDate,
+    pub date: NaiveDate,
     pub meals: Vec<Meal>,
 }
