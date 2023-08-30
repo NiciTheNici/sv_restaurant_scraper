@@ -1,6 +1,6 @@
 use crate::Menu;
 pub struct Restaurant {
-    name: String,
-    link: String,
-    days: Vec<Menu>,
+    pub name: String,
+    pub link: String,
+    pub menus: Vec<Menu>,
 }

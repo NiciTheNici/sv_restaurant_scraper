@@ -2,7 +2,7 @@ mod structs;
 use crate::structs::*;
 use chrono::prelude::*;
 use colored::Colorize;
-use scraper::*;
+use scraper::{error::SelectorErrorKind, *};
 use std::fs;
 use url::Url;
 
@@ -12,28 +12,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let res = get_svrestaurant_html(restaurant_url.as_str()).await?;
     let document = Html::parse_document(&res);
 
-    let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
-    let restaurant_name_selector = Selector::parse("a")?;
-
     let weekday_selector = Selector::parse("div.menu-plan-grid")?;
     let date_selector = Selector::parse("span.date")?;
     let mealname_selector = Selector::parse("h2.menu-title")?;
 
+    let restaurants = get_restaurants(&document);
+
     let mut menus = Vec::new();
-
-    let restaurants = document
-        .select(&restaurant_nav_selector)
-        .next()
-        .unwrap()
-        .select(&restaurant_name_selector);
-
-    for restaurant in restaurants {
-        println!(
-            "https://{}{}",
-            restaurant_url.host_str().unwrap(),
-            restaurant.value().attr("href").unwrap()
-        );
-    }
 
     for (i, day) in document.select(&weekday_selector).enumerate() {
         let date = parse_date(document.select(&date_selector).nth(i).unwrap().inner_html())?;
@@ -59,6 +44,27 @@ fn pretty_print_menu(menus: Vec<Menu>) {
             println!("{}", meal.name);
         }
     }
+}
+
+fn get_restaurants(document: &Html) -> Result<Vec<Restaurant>, SelectorErrorKind> {
+    let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
+    let restaurant_name_selector = Selector::parse("a")?;
+
+    let mut restaurants: Vec<Restaurant> = Vec::new();
+
+    for restaurant in document
+        .select(&restaurant_nav_selector)
+        .next()
+        .unwrap()
+        .select(&restaurant_name_selector)
+    {
+        restaurants.push(Restaurant {
+            name: restaurant.inner_html(),
+            link: format!("{}", restaurant.value().attr("href").unwrap()),
+            menus: Vec::new(),
+        })
+    }
+    Ok(restaurants)
 }
 
 fn parse_date(mut scraped_date: String) -> Result<NaiveDate, chrono::ParseError> {
