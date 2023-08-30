@@ -3,28 +3,47 @@ use crate::structs::*;
 use chrono::prelude::*;
 use colored::Colorize;
 use scraper::*;
+use std::fs;
+use url::Url;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let res =
-        get_svrestaurant_html("https://giardino-sg.sv-restaurant.ch/de/menuplan/giardino/").await?;
+    let restaurant_url = Url::parse(&fs::read_to_string("./restaurant.txt")?)?;
+    let res = get_svrestaurant_html(restaurant_url.as_str()).await?;
     let document = Html::parse_document(&res);
-    let day_selector = Selector::parse("div.menu-plan-grid").unwrap();
-    let meal_selector = Selector::parse("h2.menu-title").unwrap();
-    let date_selector = Selector::parse("span.date").unwrap();
+
+    let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
+    let restaurant_name_selector = Selector::parse("a")?;
+
+    let weekday_selector = Selector::parse("div.menu-plan-grid")?;
+    let date_selector = Selector::parse("span.date")?;
+    let mealname_selector = Selector::parse("h2.menu-title")?;
+
     let mut menus = Vec::new();
 
-    for (i, day) in document.select(&day_selector).enumerate() {
+    let restaurants = document
+        .select(&restaurant_nav_selector)
+        .next()
+        .unwrap()
+        .select(&restaurant_name_selector);
+
+    for restaurant in restaurants {
+        println!(
+            "https://{}{}",
+            restaurant_url.host_str().unwrap(),
+            restaurant.value().attr("href").unwrap()
+        );
+    }
+
+    for (i, day) in document.select(&weekday_selector).enumerate() {
         let date = parse_date(document.select(&date_selector).nth(i).unwrap().inner_html())?;
-        // println!("date: {}", date.to_string().red());
 
         let mut meals = Vec::new();
-        for meal in day.select(&meal_selector) {
+        for meal in day.select(&mealname_selector) {
             let meal = Meal {
                 name: meal.inner_html(),
                 description: String::from("placeholder"),
             };
-            // println!("{}", &meal.name);
             meals.push(meal);
         }
         menus.push(Menu { date, meals });
