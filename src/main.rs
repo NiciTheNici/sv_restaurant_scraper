@@ -12,11 +12,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let res = get_svrestaurant_html(restaurant_url.as_str()).await?;
     let document = Html::parse_document(&res);
 
+    let restaurants = get_restaurants(&document);
+    let menus = get_menus(&document)?;
+
+    pretty_print_menu(menus);
+    Ok(())
+}
+
+fn pretty_print_menu(menus: Vec<Menu>) {
+    for menu in menus {
+        println!("{}", menu.date.format("%d.%m").to_string().red());
+        for meal in menu.meals {
+            println!("{}", meal.name);
+        }
+    }
+}
+
+fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
+    //TODO replace this box with something better
     let weekday_selector = Selector::parse("div.menu-plan-grid")?;
     let date_selector = Selector::parse("span.date")?;
     let mealname_selector = Selector::parse("h2.menu-title")?;
-
-    let restaurants = get_restaurants(&document);
 
     let mut menus = Vec::new();
 
@@ -33,17 +49,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         menus.push(Menu { date, meals });
     }
-    pretty_print_menu(menus);
-    Ok(())
-}
 
-fn pretty_print_menu(menus: Vec<Menu>) {
-    for menu in menus {
-        println!("{}", menu.date.format("%d.%m").to_string().red());
-        for meal in menu.meals {
-            println!("{}", meal.name);
-        }
-    }
+    Ok(menus)
 }
 
 fn get_restaurants(document: &Html) -> Result<Vec<Restaurant>, SelectorErrorKind> {
