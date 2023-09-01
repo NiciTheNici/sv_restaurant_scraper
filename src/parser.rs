@@ -1,8 +1,7 @@
+use crate::fetch;
 use crate::structs::*;
 use chrono::prelude::*;
-use colored::Colorize;
-use scraper::{error::SelectorErrorKind, *};
-use std::fs;
+use scraper::*;
 use url::Url;
 
 pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
@@ -30,7 +29,10 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
     Ok(menus)
 }
 
-pub fn get_restaurants(document: &Html) -> Result<Vec<Restaurant>, SelectorErrorKind> {
+pub async fn get_restaurants(
+    document: &Html,
+    base_url: Url,
+) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
     let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
     let restaurant_name_selector = Selector::parse("a")?;
 
@@ -44,9 +46,17 @@ pub fn get_restaurants(document: &Html) -> Result<Vec<Restaurant>, SelectorError
     {
         restaurants.push(Restaurant {
             name: restaurant.inner_html(),
-            link: format!("{}", restaurant.value().attr("href").unwrap()),
+            link: format!(
+                "https://{}{}",
+                base_url.host_str().unwrap(),
+                restaurant.value().attr("href").unwrap()
+            ),
             menus: Vec::new(),
         })
+    }
+    for restaurant in &mut restaurants {
+        let doc = fetch::fetch_doc(&restaurant.link).await?;
+        restaurant.menus.append(&mut get_menus(&doc)?);
     }
     Ok(restaurants)
 }
