@@ -36,24 +36,42 @@ pub async fn get_restaurants(
     let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
     let restaurant_name_selector = Selector::parse("a")?;
 
+    let restaurant_nav = document.select(&restaurant_nav_selector).next();
     let mut restaurants: Vec<Restaurant> = Vec::new();
 
-    for restaurant in document
-        .select(&restaurant_nav_selector)
-        .next()
-        .unwrap()
-        .select(&restaurant_name_selector)
-    {
-        restaurants.push(Restaurant {
-            name: restaurant.inner_html(),
-            link: format!(
-                "https://{}{}",
-                base_url.host_str().unwrap(),
-                restaurant.value().attr("href").unwrap()
-            ),
-            menus: Vec::new(),
-        })
+    match restaurant_nav {
+        Some(restaurant_nav) => {
+            for restaurant in restaurant_nav.select(&restaurant_name_selector) {
+                restaurants.push(Restaurant {
+                    name: restaurant.inner_html(),
+                    link: format!(
+                        "https://{}{}",
+                        base_url.host_str().unwrap(),
+                        restaurant.value().attr("href").unwrap()
+                    ),
+                    menus: Vec::new(),
+                })
+            }
+        }
+        None => {
+            let current_restaurant_selector = Selector::parse("div.name-wrap")?;
+            let current_restaurant_name_selector = Selector::parse("a")?;
+            let current_restaurant = document
+                .select(&current_restaurant_selector)
+                .next()
+                .unwrap()
+                .select(&current_restaurant_name_selector)
+                .next()
+                .unwrap()
+                .inner_html();
+            restaurants.push(Restaurant {
+                name: current_restaurant,
+                link: base_url.to_string(),
+                menus: Vec::new(),
+            })
+        }
     }
+
     for restaurant in &mut restaurants {
         let doc = fetch::fetch_doc(&restaurant.link).await?;
         restaurant.menus.append(&mut get_menus(&doc)?);
