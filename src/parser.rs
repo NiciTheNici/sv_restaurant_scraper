@@ -5,7 +5,6 @@ use scraper::*;
 use url::Url;
 
 pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
-    //TODO replace this box with something better
     let weekday_selector = Selector::parse("div.menu-plan-grid")?;
     let date_selector = Selector::parse("span.date")?;
     let mealname_selector = Selector::parse("h2.menu-title")?;
@@ -80,6 +79,5 @@ pub async fn get_restaurants(
 }
 fn parse_date(mut scraped_date: String) -> Result<NaiveDate, chrono::ParseError> {
     scraped_date.push_str(Local::now().year().to_string().as_str());
-    // println!("{}", scraped_date);
     NaiveDate::parse_from_str(scraped_date.as_str(), "%d.%m.%Y")
 }
