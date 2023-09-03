@@ -9,23 +9,30 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
     let date_selector = Selector::parse("span.date")?;
     let mealname_selector = Selector::parse("h2.menu-title")?;
 
-    let mut menus = Vec::new();
+    let mut selected_mealnames = document.select(&weekday_selector);
 
-    for (i, day) in document.select(&weekday_selector).enumerate() {
-        let date = parse_date(document.select(&date_selector).nth(i).unwrap().inner_html())?;
+    match selected_mealnames.next() {
+        Some(_) => {
+            let mut menus = Vec::new();
 
-        let mut meals = Vec::new();
-        for meal in day.select(&mealname_selector) {
-            let meal = Meal {
-                name: meal.inner_html(),
-                description: String::from("placeholder"),
-            };
-            meals.push(meal);
+            for (i, day) in selected_mealnames.enumerate() {
+                let date =
+                    parse_date(document.select(&date_selector).nth(i).unwrap().inner_html())?;
+
+                let mut meals = Vec::new();
+                for meal in day.select(&mealname_selector) {
+                    let meal = Meal {
+                        name: meal.inner_html(),
+                        description: String::from("placeholder"),
+                    };
+                    meals.push(meal);
+                }
+                menus.push(Menu { date, meals });
+            }
+            Ok(menus)
         }
-        menus.push(Menu { date, meals });
+        None => Err(crate::structs::MenuError.into()),
     }
-
-    Ok(menus)
 }
 
 pub async fn get_restaurants(
