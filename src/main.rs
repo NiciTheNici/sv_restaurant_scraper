@@ -2,6 +2,7 @@ mod fetch;
 mod parser;
 mod structs;
 use crate::structs::*;
+use chrono::Datelike;
 use colored::Colorize;
 use inflector::cases::titlecase::to_title_case;
 use std::fs;
@@ -28,7 +29,15 @@ fn pretty_print_restaurants(restaurants: Vec<Restaurant>) {
                 .bold()
         );
         for menu in restaurant.menus {
-            println!("{}", menu.date.format("%d.%m").to_string().red());
+            println!(
+                "{}",
+                format!(
+                    "{} - {}",
+                    menu.date.weekday(),
+                    menu.date.format("%d.%m.%Y").to_string()
+                )
+                .red()
+            );
             for meal in menu.meals {
                 println!("{}", meal.name);
             }
