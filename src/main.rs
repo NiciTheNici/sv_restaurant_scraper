@@ -2,9 +2,6 @@ mod fetch;
 mod parser;
 mod structs;
 use crate::structs::*;
-use chrono::Datelike;
-use colored::Colorize;
-use inflector::cases::titlecase::to_title_case;
 use std::fs;
 use url::Url;
 
