@@ -6,19 +6,16 @@ use url::Url;
 
 pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
     let weekday_selector = Selector::parse("div.menu-plan-grid")?;
-    let date_selector = Selector::parse("span.date")?;
     let mealname_selector = Selector::parse("h2.menu-title")?;
 
-    let mut selected_mealnames = document.select(&weekday_selector);
-
-    match selected_mealnames.next() {
-        Some(_) => {
+    let selected_mealnames = document.select(&weekday_selector);
+    match selected_mealnames.size_hint() {
+        (.., Some(_)) => {
             let mut menus = Vec::new();
+            let dates = parse_dates(document)?;
+            // println!("{:#?}", dates);
 
             for (i, day) in selected_mealnames.enumerate() {
-                let date =
-                    parse_date(document.select(&date_selector).nth(i).unwrap().inner_html())?;
-
                 let mut meals = Vec::new();
                 for meal in day.select(&mealname_selector) {
                     let meal = Meal {
@@ -27,11 +24,20 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
                     };
                     meals.push(meal);
                 }
-                menus.push(Menu { date, meals });
+
+                let current_date = dates[i];
+
+                menus.push(Menu {
+                    date: current_date,
+                    meals,
+                });
             }
             Ok(menus)
         }
-        None => Err(crate::structs::MenuError.into()),
+        (.., None) => Err(ScrapeError {
+            message: String::from("No meals found"),
+        }
+        .into()),
     }
 }
 
@@ -84,7 +90,19 @@ pub async fn get_restaurants(
     }
     Ok(restaurants)
 }
-fn parse_date(mut scraped_date: String) -> Result<NaiveDate, chrono::ParseError> {
-    scraped_date.push_str(Local::now().year().to_string().as_str());
-    NaiveDate::parse_from_str(scraped_date.as_str(), "%d.%m.%Y")
+fn parse_dates(document: &Html) -> Result<Vec<NaiveDate>, Box<dyn std::error::Error>> {
+    let date_selector = Selector::parse("span.date")?;
+    let scraped_dates = document.select(&date_selector);
+    let mut dates = Vec::new();
+
+    for scraped_date in scraped_dates {
+        let mut scraped_date_string = scraped_date.inner_html();
+        scraped_date_string.push_str(Local::now().year().to_string().as_str());
+        dates.push(NaiveDate::parse_from_str(
+            scraped_date_string.as_str(),
+            "%d.%m.%Y",
+        )?);
+    }
+
+    Ok(dates)
 }
