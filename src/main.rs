@@ -15,7 +15,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let restaurants = parser::get_restaurants(&document, base_restaurant_url).await?;
 
-    // pretty_print_restaurants(restaurants);
     for restaurant in restaurants {
         println!("{}", restaurant);
     }
