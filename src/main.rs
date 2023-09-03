@@ -15,32 +15,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let restaurants = parser::get_restaurants(&document, base_restaurant_url).await?;
 
-    pretty_print_restaurants(restaurants);
-    Ok(())
-}
-
-fn pretty_print_restaurants(restaurants: Vec<Restaurant>) {
+    // pretty_print_restaurants(restaurants);
     for restaurant in restaurants {
-        println!();
-        println!(
-            "{}",
-            to_title_case(restaurant.name.to_lowercase().as_str())
-                .blue()
-                .bold()
-        );
-        for menu in restaurant.menus {
-            println!(
-                "{}",
-                format!(
-                    "{} - {}",
-                    menu.date.weekday(),
-                    menu.date.format("%d.%m.%Y").to_string()
-                )
-                .red()
-            );
-            for meal in menu.meals {
-                println!("{}", meal.name);
-            }
-        }
+        println!("{}", restaurant);
     }
+    Ok(())
 }
