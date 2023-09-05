@@ -40,10 +40,27 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
     }
 }
 
+pub fn get_base_url(document: &Html) -> Result<Url, Box<dyn std::error::Error>> {
+    let base_url_selector = Selector::parse(r#"meta[property="og:url"]"#)?;
+    let base_url = match document.select(&base_url_selector).next() {
+        Some(res) => Ok(res.value().attr("content")),
+        None => Err(SvError {
+            message: String::from("Could not get base url"),
+        }),
+    };
+    match base_url? {
+        Some(res) => Ok(Url::parse(res)?),
+        None => Err(SvError {
+            message: String::from("Url property does not exist"),
+        }
+        .into()),
+    }
+}
+
 pub async fn get_restaurants(
     document: &Html,
-    base_url: Url,
 ) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
+    let base_url = get_base_url(document)?;
     let restaurant_nav_selector = Selector::parse("div.restaurant-nav")?;
     let restaurant_name_selector = Selector::parse("a")?;
 
@@ -101,7 +118,8 @@ pub async fn get_restaurants(
     }
 
     for restaurant in &mut restaurants {
-        let doc = fetch::fetch_doc(&restaurant.link).await?;
+        let url = Url::parse(restaurant.link.as_str())?;
+        let doc = fetch::fetch_doc(&url).await?;
         restaurant.menus.append(&mut get_menus(&doc)?);
     }
     Ok(restaurants)
