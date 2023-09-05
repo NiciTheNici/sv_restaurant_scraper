@@ -11,10 +11,8 @@ pub async fn fetch_doc(url: &Url) -> Result<Html, Box<dyn std::error::Error>> {
     Ok(Html::parse_document(&res))
 }
 
-pub async fn fetch_restaurants(
-    url: &String,
-) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
-    let url = Url::parse(url.as_str())?;
+pub async fn fetch_restaurants(url: &str) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
+    let url = Url::parse(url)?;
     let document = fetch_doc(&url).await?;
     get_restaurants(&document).await
 }
