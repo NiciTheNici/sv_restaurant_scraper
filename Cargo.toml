@@ -1,6 +1,6 @@
 [package]
 name = "sv_menu_scraper"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "GPL-2.0"
 description = "This library allows you to scrape sv_restaurant menu websites such as \"https://bkw-bern.sv-restaurant.ch/de/menuplan/\""
