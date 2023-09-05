@@ -101,7 +101,8 @@ pub async fn get_restaurants(
     }
 
     for restaurant in &mut restaurants {
-        let doc = fetch::fetch_doc(&restaurant.link).await?;
+        let url = Url::parse(restaurant.link.as_str())?;
+        let doc = fetch::fetch_doc(&url).await?;
         restaurant.menus.append(&mut get_menus(&doc)?);
     }
     Ok(restaurants)
