@@ -3,7 +3,7 @@ use colored::Colorize;
 use inflector::cases::titlecase::to_title_case;
 
 use crate::Menu;
-use std::fmt::{self, write};
+use std::fmt;
 
 #[derive(Debug)]
 pub struct Restaurant {
