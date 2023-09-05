@@ -1,7 +1,6 @@
 mod fetch;
 mod parser;
 mod structs;
-use crate::structs::*;
 use std::fs;
 use url::Url;
 

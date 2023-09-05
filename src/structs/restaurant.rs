@@ -2,7 +2,7 @@ use chrono::Datelike;
 use colored::Colorize;
 use inflector::cases::titlecase::to_title_case;
 
-use crate::Menu;
+use crate::structs::Menu;
 use std::fmt;
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use crate::Meal;
+use crate::structs::Meal;
 use chrono::prelude::*;
 
 #[derive(Debug)]
