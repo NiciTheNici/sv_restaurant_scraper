@@ -16,5 +16,5 @@ pub async fn fetch_restaurants(
 ) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
     let url = Url::parse(url.as_str())?;
     let document = fetch_doc(&url).await?;
-    get_restaurants(&document, url).await
+    get_restaurants(&document).await
 }
