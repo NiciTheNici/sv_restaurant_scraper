@@ -7,5 +7,5 @@ pub use menu::Menu;
 mod restaurant;
 pub use restaurant::Restaurant;
 
-mod scrape_error;
-pub use scrape_error::ScrapeError;
+mod sv_error;
+pub use sv_error::SvError;

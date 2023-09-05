@@ -13,7 +13,6 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
         (.., Some(_)) => {
             let mut menus = Vec::new();
             let dates = parse_dates(document)?;
-            // println!("{:#?}", dates);
 
             for (i, day) in selected_mealnames.enumerate() {
                 let mut meals = Vec::new();
@@ -34,7 +33,7 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
             }
             Ok(menus)
         }
-        (.., None) => Err(ScrapeError {
+        (.., None) => Err(SvError {
             message: String::from("No meals found"),
         }
         .into()),
@@ -54,30 +53,47 @@ pub async fn get_restaurants(
     match restaurant_nav {
         Some(restaurant_nav) => {
             for restaurant in restaurant_nav.select(&restaurant_name_selector) {
+                let host_str = match base_url.host_str() {
+                    Some(host_str) => Ok(host_str),
+                    None => Err(SvError {
+                        message: String::from("Error parsing host_str"),
+                    }),
+                };
+                let link_subdirectory = match restaurant.value().attr("href") {
+                    Some(link_subdirectory) => Ok(link_subdirectory),
+                    None => Err(SvError {
+                        message: String::from("Failed to get subdirectory from restaurant"),
+                    }),
+                };
+
+                let link = format!("https://{}{}", host_str?, link_subdirectory?);
                 restaurants.push(Restaurant {
                     name: restaurant.inner_html(),
-                    link: format!(
-                        "https://{}{}",
-                        base_url.host_str().unwrap(),
-                        restaurant.value().attr("href").unwrap()
-                    ),
+                    link,
                     menus: Vec::new(),
                 })
             }
         }
         None => {
-            let current_restaurant_selector = Selector::parse("div.name-wrap")?;
-            let current_restaurant_name_selector = Selector::parse("a")?;
-            let current_restaurant = document
-                .select(&current_restaurant_selector)
+            let restaurant_selector = Selector::parse("div.name-wrap")?;
+            let restaurant_name_selector = Selector::parse("a")?;
+            let restaurant_fragment = match document.select(&restaurant_selector).next() {
+                Some(res) => Ok(res),
+                None => Err(SvError {
+                    message: String::from("Could not find div named \"name-wrap\""),
+                }),
+            };
+            let restaurant = match restaurant_fragment?
+                .select(&restaurant_name_selector)
                 .next()
-                .unwrap()
-                .select(&current_restaurant_name_selector)
-                .next()
-                .unwrap()
-                .inner_html();
+            {
+                Some(res) => Ok(res),
+                None => Err(SvError {
+                    message: String::from("Could not find \"anchor\" inside div \"name-wrap\""),
+                }),
+            };
             restaurants.push(Restaurant {
-                name: current_restaurant,
+                name: restaurant?.inner_html(),
                 link: base_url.to_string(),
                 menus: Vec::new(),
             })
