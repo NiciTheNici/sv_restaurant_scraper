@@ -9,3 +9,6 @@ pub use restaurant::Restaurant;
 
 mod sv_error;
 pub use sv_error::SvError;
+
+mod restaurant_search_result;
+pub use restaurant_search_result::RestaurantSearchResponse;

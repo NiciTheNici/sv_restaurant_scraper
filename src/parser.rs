@@ -1,18 +1,31 @@
 use crate::fetch;
 use crate::structs::*;
 use chrono::prelude::*;
-use regex::Regex;
 use scraper::*;
 use serde_json::{from_str, Value};
 use unescaper::unescape;
 use url::Url;
 
-pub fn parse_restaurant_search(response: String) -> Result<String, Box<dyn std::error::Error>> {
-    let escaped = unescape(response.as_str())?;
-    let json: Value = from_str(escaped.as_str())?;
-    println!("{:#?}", json);
+pub fn parse_restaurant_search(
+    response: String,
+) -> Result<RestaurantSearchResponse, Box<dyn std::error::Error>> {
+    let json: Value = from_str(response.as_str())?;
+    let json2 = &json["empty"]["callbackfunc"].to_string();
+    let mut data = json2
+        .split_once("List(")
+        .unwrap()
+        .1
+        .rsplit_once(", true")
+        .unwrap()
+        .0;
 
-    Ok(escaped)
+    // for da in data {
+    //     println!("- {}", da);
+    // }
+
+    let escaped = unescape(data)?;
+    let deserialized: RestaurantSearchResponse = from_str(&escaped)?;
+    Ok(deserialized)
 }
 
 pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
