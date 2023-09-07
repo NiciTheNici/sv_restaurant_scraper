@@ -1,8 +1,19 @@
 use crate::fetch;
 use crate::structs::*;
 use chrono::prelude::*;
+use regex::Regex;
 use scraper::*;
+use serde_json::{from_str, Value};
+use unescaper::unescape;
 use url::Url;
+
+pub fn parse_restaurant_search(response: String) -> Result<String, Box<dyn std::error::Error>> {
+    let escaped = unescape(response.as_str())?;
+    let json: Value = from_str(escaped.as_str())?;
+    println!("{:#?}", json);
+
+    Ok(escaped)
+}
 
 pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error>> {
     let weekday_selector = Selector::parse("div.menu-plan-grid")?;

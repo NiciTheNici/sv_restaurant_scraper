@@ -2,14 +2,14 @@ mod fetch;
 mod parser;
 mod structs;
 use crate::structs::*;
+use std::ascii;
 use std::fs;
 use url::Url;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // print_restaurants().await
-    println!("{:#?}", fetch::fetch_restaurants("bkw").await?);
-
+    parser::parse_restaurant_search(fetch::fetch_restaurants("bkw").await?)?;
     Ok(())
 }
 
