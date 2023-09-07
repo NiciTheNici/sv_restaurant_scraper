@@ -41,6 +41,7 @@ pub fn get_menus(document: &Html) -> Result<Vec<Menu>, Box<dyn std::error::Error
 }
 
 pub async fn get_restaurants(
+    // TODO refactor fetch logic into new method. This one should only parse the html
     document: &Html,
     base_url: Url,
 ) -> Result<Vec<Restaurant>, Box<dyn std::error::Error>> {
