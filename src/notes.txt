@@ -2,4 +2,5 @@
 curl 'https://www.sv-restaurant.ch/de/mensen/mensa-suche?type=8700'
 
 # Search restaurants by name (make this local later)
-curl 'https://www.sv-restaurant.ch/de/mensen/mensa-suche?type=8700' --data-raw 'searchfield=bkw&typeofrestaurant=0&entranceregulation=0'
+curl 'https://www.sv-restaurant.ch/de/mensen/mensa-suche?type=8700' \
+--data-raw 'searchfield=bkw&typeofrestaurant=0&entranceregulation=0'
