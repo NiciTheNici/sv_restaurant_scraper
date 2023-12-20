@@ -7,8 +7,8 @@ use url::Url;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // print_restaurants().await
-    let result = parser::parse_restaurant_search(fetch::fetch_restaurants("").await?)?;
+    // print_restaurants().await?;
+    let result = parser::parse_restaurant_search(fetch::fetch_restaurants("ZKB").await?)?;
     println!("{:#?}", result);
     Ok(())
 }
